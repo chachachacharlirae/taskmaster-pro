@@ -1,7 +1,8 @@
 # taskmaster-pro
 
-A simple but useful interface for keeping track of your daily work task to mange your time as effectively as possible.
+A simple but useful interface for keeping track of your daily work tasks to manage your time as effectively as possible.
 Important tasks like ***grgregerg***
+Enjoy!
 
 
 
