@@ -1,97 +1,63 @@
-var tasks = {};
 
-var createTask = function(taskText, taskDate, taskList) {
-  // create elements that make up a task item
-  var taskLi = $("<li>").addClass("list-group-item");
-  var taskSpan = $("<span>")
-    .addClass("badge badge-primary badge-pill")
-    .text(taskDate);
-  var taskP = $("<p>")
-    .addClass("m-1")
-    .text(taskText);
+$("#currentDay").text(moment().format("dddd, MMMM Do"));
 
-  // append span and p element to parent li
-  taskLi.append(taskSpan, taskP);
+    var blockColor = function (time) {
+    var testTime = moment(moment().format("H A"), "H A");
+    var testBlock = moment(time, "H A");
 
-
-  // append to ul list on the page
-  $("#list-" + taskList).append(taskLi);
-};
-
-var loadTasks = function() {
-  tasks = JSON.parse(localStorage.getItem("tasks"));
-
-  // if nothing in localStorage, create a new object to track all task status arrays
-  if (!tasks) {
-    tasks = {
-      toDo: [],
-      inProgress: [],
-      inReview: [],
-      done: []
-    };
-  }
-
-  // loop over object properties
-  $.each(tasks, function(list, arr) {
     
-    // then loop over sub-array
-    arr.forEach(function(task) {
-      createTask(task.text, task.date, list);
-    });
-  });
+    if (testTime.isBefore(testBlock) === true) {
+        return "future";
+    } else if (testTime.isAfter(testBlock) === true) {
+        return "past";
+    } else {
+        return "present";
+    }
+};
+var daySchedule = [
+	{ time: "3 PM", event: "" },{ time: "4 PM", event: "" },
+	{ time: "5 PM", event: "" },{ time: "6 PM", event: "" },
+	{ time: "7 PM", event: "" },{ time: "8 PM", event: "" },
+	{ time: "9 PM", event: "" },{ time: "10 PM", event: "" },
+  { time: "11 PM", event: "" },
+];
+
+// if localStorage is not empty retrieve the saved schedule from localStorage
+if (JSON.parse(localStorage.getItem("savedSchedule")) !== null) {
+    daySchedule = JSON.parse(localStorage.getItem("savedSchedule"));
 };
 
-var saveTasks = function() {
-  localStorage.setItem("tasks", JSON.stringify(tasks));
-};
 
+daySchedule.forEach(function(hourBlock, index) {
 
-
-
-// modal was triggered
-$("#task-form-modal").on("show.bs.modal", function() {
-  // clear values
-  $("#modalTaskDescription, #modalDueDate").val("");
+    
+    let timeLabel = hourBlock.time;
+    let hourColor = blockColor(timeLabel);
+    let hourFormat =
+    '<div class="time-block" id="' +
+		index +
+		'"><div class="row no-gutters input-group"><div class="col-sm-2 col-lg-1 input-group-prepend hour justify-content-sm-end pr-3 pt-3">' +
+		timeLabel +
+		'</div><textarea class="form-control ' +
+		hourColor +
+		' description">' +
+		hourBlock.event +
+        '</textarea><div class="col-sm-2 col-lg-1 input-group-append"><button class="saveBtn btn-block" type="submit"><i class="far fa-save"></i></button></div></div></div>';
+    
+    // append the hourFormat 
+    $(".container").append(hourFormat);
 });
 
-// modal is fully visible
-$("#task-form-modal").on("shown.bs.modal", function() {
-  // highlight textarea
-  $("#modalTaskDescription").trigger("focus");
+// save updated time block 
+$(".saveBtn").on("click", function(event) {
+
+    let blockID = parseInt($(this).closest(".time-block").attr("id"));
+    let userEntry = $.trim($(this).parent().siblings("textarea").val());
+    daySchedule[blockID].event = userEntry;
+    localStorage.setItem("savedSchedule", JSON.stringify(daySchedule));
 });
 
-// save button in modal was clicked
-$("#task-form-modal .btn-primary").click(function() {
-  // get form values
-  var taskText = $("#modalTaskDescription").val();
-  var taskDate = $("#modalDueDate").val();
 
-  if (taskText && taskDate) {
-    createTask(taskText, taskDate, "toDo");
 
-    // close modal
-    $("#task-form-modal").modal("hide");
-
-    // save in tasks array
-    tasks.toDo.push({
-      text: taskText,
-      date: taskDate
-    });
-
-    saveTasks();
-  }
-});
-
-// remove all tasks
-$("#remove-tasks").on("click", function() {
-  for (var key in tasks) {
-    tasks[key].length = 0;
-    $("#list-" + key).empty();
-  }
-  saveTasks();
-});
-
-// load tasks for the first time
-loadTasks();
 
 
